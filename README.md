@@ -1,6 +1,6 @@
 # Running complete
 ```
-got directory log and unzip log.zip
+go directory log and unzip log.zip
 
 run script python for convert csv file to log file
 
@@ -16,4 +16,4 @@ get ip and with port 5601 search in browser
 
 ```
 
-in the server config nginx with server_name: localhost:5601
+in the server config nginx with proxy_pass http://localhost:5601
