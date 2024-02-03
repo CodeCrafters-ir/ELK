@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  elasticsearch:
+    image: elasticsearch:7.9.1
+    hostname: elasticsearch
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - transport.host=0.0.0.0
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - ELASTICSEARCH_PASSWORD="password12"
+      - ELASTICSEARCH_USERNAME="elastic12"
+    expose:
+      - 9200
+      - 9300
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elk
+    volumes:
+      - test_data:/usr/share/elasticsearch/data/
+
+  logstash:
+    image: logstash:7.9.1
+    hostname: logstash
+    container_name: logstash
+    environment:
+      ELASTICSEARCH_HOSTS: elasticsearch:9200
+      ELASTICSEARCH_USERNAME: "password12"
+      ELASTICSEARCH_PASSWORD: "elastic12"
+    depends_on:
+      - elasticsearch
+    expose:
+      - 9600
+      - 5000
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    networks:        
+      - elk
+    volumes:
+      - ./elk-config/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./elk-config/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ls_data:/usr/share/logstash/data
+      - ./log/logging.log:/usr/share/logstash/input/logging.log
+
+  kibana:
+    image: kibana:7.9.1
+    hostname: kibana
+    container_name: kibana
+    depends_on:
+      - elasticsearch
+    expose:
+      - 5601
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    volumes:
+      - ./elk-config/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kb_data:/usr/share/kibana/data
+
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+  test_data:
+  ls_data:
+  kb_data:
